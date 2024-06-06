@@ -17,6 +17,7 @@ class Character extends FlxSprite
 	public var curCharacter:String = 'bf';
 
 	public var holdTimer:Float = 0;
+	public var singDuration:Float = 4;
 
 	public var animationNotes:Array<Dynamic> = [];
 
@@ -428,19 +429,30 @@ class Character extends FlxSprite
 				frames = Paths.getSparrowAtlas('charactersAssets/bfPixel', 'shared');
 				animation.addByPrefix('idle', 'BF IDLE', 24, false);
 				animation.addByPrefix('singUP', 'BF UP NOTE', 24, false);
-				animation.addByPrefix('singLEFT', 'BF LEFT NOTE', 24, false);
-				animation.addByPrefix('singRIGHT', 'BF RIGHT NOTE', 24, false);
+				if (!isPlayer)
+				{
+					animation.addByPrefix('singLEFT', 'BF RIGHT NOTE', 24, false);
+					animation.addByPrefix('singRIGHT', 'BF LEFT NOTE', 24, false);
+				}
+				else
+				{
+					animation.addByPrefix('singLEFT', 'BF LEFT NOTE', 24, false);
+					animation.addByPrefix('singRIGHT', 'BF RIGHT NOTE', 24, false);
+
+					// miss anims
+					animation.addByPrefix('singUPmiss', 'BF UP MISS', 24, false);
+					animation.addByPrefix('singLEFTmiss', 'BF LEFT MISS', 24, false);
+					animation.addByPrefix('singRIGHTmiss', 'BF RIGHT MISS', 24, false);
+					animation.addByPrefix('singDOWNmiss', 'BF DOWN MISS', 24, false);
+				}
 				animation.addByPrefix('singDOWN', 'BF DOWN NOTE', 24, false);
-				animation.addByPrefix('singUPmiss', 'BF UP MISS', 24, false);
-				animation.addByPrefix('singLEFTmiss', 'BF LEFT MISS', 24, false);
-				animation.addByPrefix('singRIGHTmiss', 'BF RIGHT MISS', 24, false);
-				animation.addByPrefix('singDOWNmiss', 'BF DOWN MISS', 24, false);
 
 				addOffset('idle');
 				addOffset("singUP");
 				addOffset("singRIGHT");
 				addOffset("singLEFT");
 				addOffset("singDOWN");
+
 				addOffset("singUPmiss");
 				addOffset("singRIGHTmiss");
 				addOffset("singLEFTmiss");
@@ -457,29 +469,6 @@ class Character extends FlxSprite
 				antialiasing = false;
 
 				flipX = true;
-
-			case 'bf-pixel-opponent':
-				frames = Paths.getSparrowAtlas('charactersAssets/bfPixel', 'shared');
-				animation.addByPrefix('idle', 'BF IDLE', 24, false);
-				animation.addByPrefix('singUP', 'BF UP NOTE', 24, false);
-				animation.addByPrefix('singLEFT', 'BF RIGHT NOTE', 24, false);
-				animation.addByPrefix('singRIGHT', 'BF LEFT NOTE', 24, false);
-				animation.addByPrefix('singDOWN', 'BF DOWN NOTE', 24, false);
-
-				addOffset('idle');
-				addOffset("singUP");
-				addOffset("singRIGHT");
-				addOffset("singLEFT");
-				addOffset("singDOWN");
-
-				setGraphicSize(Std.int(width * 7));
-				updateHitbox();
-
-				playAnim('idle');
-
-				width -= 100;
-				height -= 100;
-
 				antialiasing = false;
 
 			case 'bf-pixel-dead':
@@ -664,6 +653,7 @@ class Character extends FlxSprite
 		}
 
 		dance();
+		animation.finish();
 
 		if (isPlayer)
 		{
@@ -710,28 +700,37 @@ class Character extends FlxSprite
 
 	override function update(elapsed:Float)
 	{
-		if (!curCharacter.startsWith('bf'))
+		if (!isPlayer)
 		{
 			if (animation.curAnim.name.startsWith('sing'))
 			{
 				holdTimer += elapsed;
 			}
 	
-			var dadVar:Float = 4;
-	
-			if (curCharacter == 'dad')
-				dadVar = 6.1;
-			if (holdTimer >= Conductor.stepCrochet * dadVar * 0.001)
+			if (holdTimer >= Conductor.stepCrochet * 0.0011 * singDuration)
 			{
 				dance();
 				holdTimer = 0;
+			}
+
+			// some characters need to hold their poses longer because it looks weird to me....
+			switch (curCharacter)
+			{
+				case 'dad':
+					singDuration = 6.1;
+				case 'gf' | 'spooky':
+					singDuration = 4.2; // to fix the double dances
 			}
 		}
 
 		if (!debugMode)
 		{
-			if(animation.curAnim.finished && animation.getByName(animation.curAnim.name + '-loop') != null)
-				playAnim(animation.curAnim.name + '-loop');		
+			if (animation.getByName(animation.curAnim.name + '-loop') != null) 
+			{
+				if (animation.curAnim.finished) {
+					playAnim(animation.curAnim.name + '-loop');
+				}
+			}
 		}
 		
 		switch (curCharacter)
@@ -765,46 +764,44 @@ class Character extends FlxSprite
 
 	private var danced:Bool = false;
 
-	/**
-	 * FOR GF DANCING SHIT
-	 */
-	 public function dance()
+	// FOR GF DANCING SHIT
+	public function dance()
+	{
+		if (!debugMode)
 		{
-			if (!debugMode)
+			switch (curCharacter)
 			{
-				switch (curCharacter)
-				{
-					case 'gf' | 'gf-car' | 'gf-christmas' | 'gf-pixel' | 'gf-tankmen':
-						if (!animation.curAnim.name.startsWith('hair'))
-						{
-							danced = !danced;
-	
-							if (danced)
-								playAnim('danceRight');
-							else
-								playAnim('danceLeft');
-						}
-					case 'bf-pixel-dead':
-						// do nothing, just act casual lol
-					case 'bf-holding-gf-DEAD':
-						// do nothing, just act casual lol
-					case 'pico-speaker':
-						// do nothing, just act casual lol
-					case 'spooky':
+				case 'gf' | 'gf-car' | 'gf-christmas' | 'gf-pixel' | 'gf-tankmen':
+					if (!animation.curAnim.name.startsWith('hair'))
+					{
 						danced = !danced;
 	
 						if (danced)
 							playAnim('danceRight');
 						else
 							playAnim('danceLeft');
-					case 'tankman':
-						if (!animation.curAnim.name.endsWith('DOWN-alt'))
-							playAnim('idle');	
-					default:
-						playAnim('idle');
-				}
+					}
+				case 'bf-pixel-dead':
+					// do nothing, just act casual lol
+				case 'bf-holding-gf-DEAD':
+					// do nothing, just act casual lol
+				case 'pico-speaker':
+					// do nothing, just act casual lol
+				case 'spooky':
+					danced = !danced;
+	
+					if (danced)
+						playAnim('danceRight');
+					else
+						playAnim('danceLeft');
+				case 'tankman':
+					if (!animation.curAnim.name.endsWith('DOWN-alt'))
+						playAnim('idle');	
+				default:
+					playAnim('idle');
 			}
 		}
+	}
 
 	public function playAnim(AnimName:String, Force:Bool = false, Reversed:Bool = false, Frame:Int = 0):Void
 	{

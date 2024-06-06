@@ -29,8 +29,10 @@ class OptionsMenuState extends MusicBeatState
 			new NaughtyOption("If unchecked, any explicit content will be censored/removed from the game."),
 			new DownscrollOption("If checked, your note strums appears on the bottom of the screen instead of up."),
 			new MiddlescrollOption("If checked, your note strums appear in the middle of the screen, & your opponents note strums disappear."),
+			new FlashingOption("If unchecked, flashing effects won't be shown \n [RECOMMENDED FOR PEOPLE WHO ARE PHOTO SENSETIVE]"),
 			new CameraZoomOption("If unchecked, the camera won't zoom on every concurring beat."),
 			new FPSOption("If unchecked, your fps counter & memory counter disappear's."),
+			new AutoPauseOption("If checked, it will automatically pause the game when it loses focus"),
 			#if !html5
 			new FramerateOption("Self explanatory. Use your left and right arrow keys to switch between your framerate. [DEFAULT: 120]"), 
 			// HTML5 has some Vsync enabled by default so this option is pretty much useless on web builds

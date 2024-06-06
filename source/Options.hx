@@ -1,5 +1,6 @@
 package;
 
+import ui.OptionsMenu;
 import lime.app.Application;
 import openfl.text.FontType;
 import flixel.util.FlxColor;
@@ -118,6 +119,14 @@ class Option
 
 		if(FlxG.save.data.camhudZoom == null)
 			FlxG.save.data.camhudZoom = true;
+
+		if(FlxG.save.data.flashingLights == null)
+			FlxG.save.data.flashingLights = true;
+
+		if(FlxG.save.data.autoPause == null) {
+			FlxG.save.data.autoPause = true;
+			FlxG.autoPause = true;
+		}
 
 		if(FlxG.save.data.weekUnlocked == null)
 			FlxG.save.data.weekUnlocked = 8;
@@ -356,6 +365,55 @@ class OpponentLightStrums extends Option
 		return "Opponents light strums ";
 	}
 }
+
+class FlashingOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function press(changeData:Bool):Bool
+	{
+		if (changeData)
+			FlxG.save.data.flashingLights = !FlxG.save.data.flashingLights;
+		acceptValues = FlxG.save.data.flashingLights;
+		display = updateDisplay();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Flashing Lights ";
+	}
+}
+
+class AutoPauseOption extends Option
+{
+	public function new(desc:String)
+	{
+		super();
+		description = desc;
+	}
+
+	public override function press(changeData:Bool):Bool
+	{
+		if (changeData) {
+			FlxG.save.data.autoPause = !FlxG.save.data.autoPause;
+			FlxG.autoPause = !FlxG.autoPause;
+		}
+		acceptValues = FlxG.save.data.autoPause;
+		display = updateDisplay();
+		return true;
+	}
+
+	private override function updateDisplay():String
+	{
+		return "Auto Pause ";
+	}
+}
+
 
 class LockWeeksOption extends Option
 {

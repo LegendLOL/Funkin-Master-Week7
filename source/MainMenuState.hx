@@ -32,7 +32,7 @@ class MainMenuState extends MusicBeatState
 	#if !switch
 	var optionShit:Array<String> = ['story mode', 'freeplay', 'donate', 'options'];
 	#else
-	var optionShit:Array<String> = ['story mode', 'freeplay'];
+	var optionShit:Array<String> = ['story mode', 'freeplay', 'options'];
 	#end
 
 	var magenta:FlxSprite;
@@ -81,7 +81,8 @@ class MainMenuState extends MusicBeatState
 		magenta.visible = false;
 		magenta.antialiasing = true;
 		magenta.color = 0xFFFD719B;
-		magenta.scrollFactor.set();
+		if (FlxG.save.data.flashingLights)
+			add(magenta);
 
 		menuItems = new MainMenuList();
 		add(menuItems);

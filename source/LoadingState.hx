@@ -25,10 +25,6 @@ class LoadingState extends MusicBeatState
 	var stopMusic = false;
 	var callbacks:MultiCallback;
 	
-	var logo:FlxSprite;
-	var gfDance:FlxSprite;
-	var danceLeft = false;
-	
 	function new(target:FlxState, stopMusic:Bool)
 	{
 		super();
@@ -38,6 +34,7 @@ class LoadingState extends MusicBeatState
 	
 	var funkay:FlxSprite;
 	var loadBar:FlxSprite;
+
 	override function create()
 	{
 		var bg:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0xffcaff4d);
@@ -63,9 +60,11 @@ class LoadingState extends MusicBeatState
 				callbacks = new MultiCallback(onLoad);
 				var introComplete = callbacks.add("introComplete");
 				checkLoadSong(getSongPath());
+
 				if (PlayState.SONG.needsVoices)
 					checkLoadSong(getVocalPath());
 				checkLibrary("shared");
+
 				if (PlayState.storyWeek > 0)
 					checkLibrary("week" + PlayState.storyWeek);
 				else
@@ -84,10 +83,6 @@ class LoadingState extends MusicBeatState
 		{
 			var library = Assets.getLibrary("songs");
 			final symbolPath = path.split(":").pop();
-			// @:privateAccess
-			// library.types.set(symbolPath, SOUND);
-			// @:privateAccess
-			// library.pathGroups.set(symbolPath, [library.__cacheBreak(symbolPath)]);
 			var callback = callbacks.add("song:" + path);
 			Assets.loadSound(path).onComplete(function (_) { callback(); });
 		}
@@ -120,10 +115,18 @@ class LoadingState extends MusicBeatState
 			funkay.updateHitbox();
 		}
 
-		if(callbacks != null) {
+		if(callbacks != null) 
+		{
 			targetShit = FlxMath.remapToRange(callbacks.numRemaining / callbacks.length, 1, 0, 0, 1);
-			loadBar.scale.x += 0.5 * (targetShit - loadBar.scale.x);
+
+			var lerpWidth:Int = Std.int(FlxMath.lerp(loadBar.width, FlxG.width * targetShit, 0.2));
+			loadBar.setGraphicSize(lerpWidth, FlxG.height);
+			loadBar.updateHitbox();
 		}
+
+		#if debug
+		if (FlxG.keys.justPressed.SPACE) trace('fired: ' + callbacks.getFired() + ' unfired:' + callbacks.getUnfired());
+		#end
 	}
 	
 	function onLoad()
@@ -152,12 +155,14 @@ class LoadingState extends MusicBeatState
 	static function getNextState(target:FlxState, stopMusic = false):FlxState
 	{
 		Paths.setCurrentLevel("week" + PlayState.storyWeek);
+
 		var loaded = isSoundLoaded(getSongPath())
 			&& (!PlayState.SONG.needsVoices || isSoundLoaded(getVocalPath()))
 			&& isLibraryLoaded("shared");
 		
 		if (!loaded)
 			return new LoadingState(target, stopMusic);
+
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 		
